@@ -52,6 +52,28 @@ export const mockDrinks: DrinkView[] = [
   drink(4, 'ماء', false, 0, 0, 0, 300),
 ];
 
+export const mockMealTemplates = [
+  {
+    id: 1,
+    nameAr: 'فطور البيض والخبز الأسمر',
+    defaultMealType: 'breakfast' as const,
+    items: [
+      { foodId: 1, nameAr: 'بيضة كاملة', quantity: 2 },
+      { foodId: 2, nameAr: 'خبز أسمر', quantity: 60 },
+    ],
+  },
+  {
+    id: 2,
+    nameAr: 'غداء دجاج ورز',
+    defaultMealType: 'lunch' as const,
+    items: [
+      { foodId: 3, nameAr: 'صدر دجاج مشوي', quantity: 180 },
+      { foodId: 4, nameAr: 'رز أبيض مطبوخ', quantity: 200 },
+      { foodId: 5, nameAr: 'زيت زيتون', quantity: 10 },
+    ],
+  },
+];
+
 export const mockExerciseCatalog: ExerciseCatalogRow[] = [
   ['walking_moderate', 'مشي معتدل (~5 كم/س)', '3.5'], ['walking_brisk', 'مشي سريع (~5.6–6.4 كم/س)', '4.3'],
   ['running_8kmh', 'جري (8 كم/س)', '8.3'], ['running_10kmh', 'جري (10 كم/س)', '9.8'],

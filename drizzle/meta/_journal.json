@@ -57,6 +57,13 @@
       "when": 1794968292240,
       "tag": "0007_katch_mcardle_setting",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795652938855,
+      "tag": "0008_saved_meal_templates",
+      "breakpoints": true
     }
   ]
 }

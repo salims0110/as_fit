@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 import { FoodForm } from '@/app/foods/FoodForm';
 import { Badge } from '@/components/Badge';
@@ -16,15 +16,33 @@ import { portionNutrition, QUANTITY_UNIT } from '@/domain/nutrition';
 import { cn } from '@/lib/cn';
 import { MEAL_LABEL } from '@/lib/labels';
 import { MEAL_TYPES, mealSchema } from '@/lib/validation/schemas';
+import { deleteMealTemplate, saveMealTemplate } from '@/server/actions/meal-templates';
 import { createMeal } from '@/server/actions/meals';
+import type { MealTemplateView } from '@/server/queries/meal-templates';
 import type { MealSchedule } from '@/server/queries/profile';
 
 const DEFAULT_QTY = { per_unit: 1, per_100g: 100, per_100ml: 100 } as const;
 
-export function MealForm({ date, nowClock, foods, schedule }: { date: string; nowClock: string; foods: FoodOption[]; schedule: MealSchedule }) {
+export function MealForm({
+  date,
+  nowClock,
+  foods,
+  templates = [],
+  schedule,
+}: {
+  date: string;
+  nowClock: string;
+  foods: FoodOption[];
+  templates?: MealTemplateView[];
+  schedule: MealSchedule;
+}) {
   // Foods created inline appear immediately, before the page refreshes with the new dictionary
   const [created, setCreated] = useState<FoodOption[]>([]);
   const [newFoodName, setNewFoodName] = useState<string | null>(foods.length === 0 ? '' : null);
+  const [showSaveTpl, setShowSaveTpl] = useState(false);
+  const [tplName, setTplName] = useState('');
+  const [tplStatus, setTplStatus] = useState<{ tone: 'brand' | 'danger'; text: string } | null>(null);
+  const [tplPending, startTplTransition] = useTransition();
   const all = [...foods, ...created.filter((c) => !foods.some((f) => f.id === c.id))];
   const byId = new Map(all.map((f) => [f.id, f]));
 
@@ -35,7 +53,7 @@ export function MealForm({ date, nowClock, foods, schedule }: { date: string; no
     successText: (r) => `حُفظت الوجبة: ${Math.round(r.kcal)} سعرة و ${Math.round(r.protein)} غ بروتين.`,
     onSuccess: () => form.reset({ ...form.getValues(), notes: '', items: [] }),
   });
-  const { fields, append, remove } = useFieldArray({ control: form.control, name: 'items' });
+  const { fields, append, remove, replace } = useFieldArray({ control: form.control, name: 'items' });
   const [mealType, actual, items] = useWatch({ control: form.control, name: ['mealType', 'actualTime', 'items'] }) as [
     keyof typeof MEAL_LABEL, string, { foodId?: number; quantity?: unknown }[],
   ];
@@ -97,6 +115,46 @@ export function MealForm({ date, nowClock, foods, schedule }: { date: string; no
       {/* 2. What */}
       <section className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold text-ink-muted">2. ماذا أكلت؟</h3>
+
+        {templates.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-xl border border-line p-3">
+            <span className="text-xs font-semibold text-ink-muted">قوالب سريعة محفوظة</span>
+            <div className="flex flex-wrap gap-2">
+              {templates.map((tpl) => (
+                <span key={tpl.id} className="inline-flex items-center rounded-full border border-line text-sm">
+                  <button
+                    type="button"
+                    id={`apply-template-${tpl.id}`}
+                    className="rounded-s-full px-3 py-1 font-medium text-ink transition-colors hover:bg-brand-soft hover:text-brand-ink"
+                    onClick={() => {
+                      if (tpl.defaultMealType) form.setValue('mealType', tpl.defaultMealType);
+                      replace(tpl.items.map((i) => ({ foodId: i.foodId, quantity: i.quantity })));
+                      setTplStatus({ tone: 'brand', text: `تم تعبئة قالب «${tpl.nameAr}» — يمكنك تعديل الكميات ثم الحفظ.` });
+                    }}
+                  >
+                    {tpl.nameAr}
+                  </button>
+                  <button
+                    type="button"
+                    id={`delete-template-${tpl.id}`}
+                    aria-label={`حذف قالب ${tpl.nameAr}`}
+                    disabled={tplPending}
+                    className="rounded-e-full border-s border-line px-2 py-1 text-xs text-ink-muted transition-colors hover:bg-danger-soft hover:text-danger-ink"
+                    onClick={() => {
+                      startTplTransition(async () => {
+                        const res = await deleteMealTemplate(tpl.id);
+                        if (!res.ok) setTplStatus({ tone: 'danger', text: res.message ?? 'تعذّر حذف القالب.' });
+                      });
+                    }}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         <FoodCombobox id="food-search-add" foods={all} onPick={addFood} onCreate={(name) => setNewFoodName(name)} />
 
         {newFoodName != null && (
@@ -137,6 +195,60 @@ export function MealForm({ date, nowClock, foods, schedule }: { date: string; no
           </ul>
         )}
         {err('items') && <p className="text-sm text-danger-ink">{err('items')}</p>}
+
+        {fields.length > 0 && !showSaveTpl && (
+          <button
+            type="button"
+            id="toggle-save-template"
+            className="w-fit text-sm font-medium text-brand-ink"
+            onClick={() => {
+              setTplStatus(null);
+              setShowSaveTpl(true);
+            }}
+          >
+            + حفظ الأصناف الحالية كقالب وجبة متكررة
+          </button>
+        )}
+
+        {fields.length > 0 && showSaveTpl && (
+          <div className="flex flex-wrap items-end gap-2 rounded-xl border border-dashed border-brand p-3">
+            <div className="flex min-w-[14rem] flex-1 flex-col gap-1">
+              <label htmlFor="template-name-input" className="text-xs font-semibold text-ink-muted">اسم القالب</label>
+              <input
+                id="template-name-input"
+                value={tplName}
+                onChange={(e) => setTplName(e.target.value)}
+                placeholder="مثال: فطوري المعتاد"
+                className={inputClass}
+              />
+            </div>
+            <Button
+              id="save-template-btn"
+              variant="secondary"
+              disabled={tplPending || tplName.trim().length === 0}
+              onClick={() => {
+                startTplTransition(async () => {
+                  const res = await saveMealTemplate({
+                    nameAr: tplName,
+                    defaultMealType: mealType,
+                    items: (items ?? []).map((it) => ({ foodId: Number(it.foodId), quantity: Number(it.quantity) })),
+                  });
+                  if (res.ok) {
+                    setTplStatus({ tone: 'brand', text: `حُفظ القالب «${tplName.trim()}».` });
+                    setTplName('');
+                    setShowSaveTpl(false);
+                  } else {
+                    setTplStatus({ tone: 'danger', text: res.message ?? 'تعذّر حفظ القالب.' });
+                  }
+                });
+              }}
+            >
+              {tplPending ? 'جارٍ الحفظ…' : 'حفظ القالب'}
+            </Button>
+            <Button variant="ghost" onClick={() => setShowSaveTpl(false)}>إلغاء</Button>
+          </div>
+        )}
+        <FormStatus status={tplStatus} />
       </section>
 
       <Field label="ملاحظات (اختياري)" htmlFor="notes">

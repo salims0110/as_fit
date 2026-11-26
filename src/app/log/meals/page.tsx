@@ -11,6 +11,7 @@ import { SideColumn } from '@/components/SideColumn';
 import { nowClock } from '@/lib/time';
 import { deleteMeal } from '@/server/actions/meals';
 import { getDayComplete, getFoods, getMealsBetween } from '@/server/queries/logs';
+import { getMealTemplates } from '@/server/queries/meal-templates';
 import { resolveDate, type DateSearchParams } from '@/server/queries/page';
 import { loadModel } from '@/server/services/metabolic-model';
 import { USER_ID } from '@/server/session';
@@ -20,8 +21,12 @@ export const metadata: Metadata = { title: 'الوجبات', description: 'تس�
 
 export default async function MealsPage({ searchParams }: { searchParams: DateSearchParams }) {
   const { tz, today, date } = await resolveDate(searchParams);
-  const [foods, meals, complete, model] = await Promise.all([
-    getFoods({ activeOnly: true }), getMealsBetween(USER_ID, date, date), getDayComplete(USER_ID, date), loadModel(USER_ID, date, date),
+  const [foods, meals, complete, model, templates] = await Promise.all([
+    getFoods({ activeOnly: true }),
+    getMealsBetween(USER_ID, date, date),
+    getDayComplete(USER_ID, date),
+    loadModel(USER_ID, date, date),
+    getMealTemplates(USER_ID),
   ]);
   const day = model?.days[0];
   const kcal = meals.reduce((s, m) => s + m.kcal, 0);
@@ -53,7 +58,14 @@ export default async function MealsPage({ searchParams }: { searchParams: DateSe
       <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card>
           <SectionTitle>وجبة جديدة</SectionTitle>
-          <MealForm key={date} date={date} nowClock={nowClock(tz)} foods={foods} schedule={model?.settings.mealSchedule ?? { breakfast: null, lunch: null, dinner: null }} />
+          <MealForm
+            key={date}
+            date={date}
+            nowClock={nowClock(tz)}
+            foods={foods}
+            templates={templates}
+            schedule={model?.settings.mealSchedule ?? { breakfast: null, lunch: null, dinner: null }}
+          />
         </Card>
 
         <SideColumn title={<SectionTitle aside={<Badge>{meals.length} وجبات</Badge>}>وجبات اليوم</SectionTitle>}>

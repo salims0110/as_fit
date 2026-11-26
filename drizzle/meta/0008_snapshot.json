@@ -1,0 +1,1904 @@
+{
+  "id": "bd22a5cf-38c1-459f-9f65-a87a9e6a7f22",
+  "prevId": "aa4135e1-35b8-48c9-8937-ed9e2321cbf3",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.beverage_catalog": {
+      "name": "beverage_catalog",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ar": {
+          "name": "name_ar",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "by_coffee_weight": {
+          "name": "by_coffee_weight",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "caffeine_mg_per_100ml": {
+          "name": "caffeine_mg_per_100ml",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "kcal_per_100ml": {
+          "name": "kcal_per_100ml",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "protein_g_per_100ml": {
+          "name": "protein_g_per_100ml",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "default_volume_ml": {
+          "name": "default_volume_ml",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'250'"
+        },
+        "default_coffee_g": {
+          "name": "default_coffee_g",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "beverage_catalog_user_id_user_profiles_id_fk": {
+          "name": "beverage_catalog_user_id_user_profiles_id_fk",
+          "tableFrom": "beverage_catalog",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "beverage_catalog_user_name_uq": {
+          "name": "beverage_catalog_user_name_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "name_ar"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "bev_cat_caffeine_ck": {
+          "name": "bev_cat_caffeine_ck",
+          "value": "\"beverage_catalog\".\"caffeine_mg_per_100ml\" >= 0"
+        },
+        "bev_cat_kcal_ck": {
+          "name": "bev_cat_kcal_ck",
+          "value": "\"beverage_catalog\".\"kcal_per_100ml\" >= 0"
+        },
+        "bev_cat_protein_ck": {
+          "name": "bev_cat_protein_ck",
+          "value": "\"beverage_catalog\".\"protein_g_per_100ml\" >= 0"
+        },
+        "bev_cat_volume_ck": {
+          "name": "bev_cat_volume_ck",
+          "value": "\"beverage_catalog\".\"default_volume_ml\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.beverage_logs": {
+      "name": "beverage_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_date": {
+          "name": "log_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "consumed_at": {
+          "name": "consumed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "beverage_id": {
+          "name": "beverage_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "drink_name": {
+          "name": "drink_name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "liquid_volume_ml": {
+          "name": "liquid_volume_ml",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dry_coffee_grams": {
+          "name": "dry_coffee_grams",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "milk_type": {
+          "name": "milk_type",
+          "type": "milk_type_t",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'none'"
+        },
+        "milk_added_ml": {
+          "name": "milk_added_ml",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "sugar_teaspoons": {
+          "name": "sugar_teaspoons",
+          "type": "numeric(3, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "caffeine_mg": {
+          "name": "caffeine_mg",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "milk_calories": {
+          "name": "milk_calories",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "milk_protein_g": {
+          "name": "milk_protein_g",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "sugar_calories": {
+          "name": "sugar_calories",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "base_calories": {
+          "name": "base_calories",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "base_protein_g": {
+          "name": "base_protein_g",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "total_calories": {
+          "name": "total_calories",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "base_calories + milk_calories + sugar_calories",
+            "type": "stored"
+          }
+        }
+      },
+      "indexes": {
+        "idx_bev_user_date": {
+          "name": "idx_bev_user_date",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "log_date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "beverage_logs_user_id_user_profiles_id_fk": {
+          "name": "beverage_logs_user_id_user_profiles_id_fk",
+          "tableFrom": "beverage_logs",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "beverage_logs_beverage_id_beverage_catalog_id_fk": {
+          "name": "beverage_logs_beverage_id_beverage_catalog_id_fk",
+          "tableFrom": "beverage_logs",
+          "tableTo": "beverage_catalog",
+          "columnsFrom": [
+            "beverage_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "bev_volume_ck": {
+          "name": "bev_volume_ck",
+          "value": "\"beverage_logs\".\"liquid_volume_ml\" >= 0"
+        },
+        "bev_coffee_ck": {
+          "name": "bev_coffee_ck",
+          "value": "\"beverage_logs\".\"dry_coffee_grams\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.body_measurements": {
+      "name": "body_measurements",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_date": {
+          "name": "log_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "neck_cm": {
+          "name": "neck_cm",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chest_cm": {
+          "name": "chest_cm",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waist_cm": {
+          "name": "waist_cm",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hip_cm": {
+          "name": "hip_cm",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "thigh_cm": {
+          "name": "thigh_cm",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bicep_cm": {
+          "name": "bicep_cm",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "whr": {
+          "name": "whr",
+          "type": "numeric(4, 3)",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "waist_cm / NULLIF(hip_cm, 0)",
+            "type": "stored"
+          }
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "body_measurements_user_id_user_profiles_id_fk": {
+          "name": "body_measurements_user_id_user_profiles_id_fk",
+          "tableFrom": "body_measurements",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "body_measurements_user_date_uq": {
+          "name": "body_measurements_user_date_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "log_date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.day_status": {
+      "name": "day_status",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_date": {
+          "name": "log_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "intake_complete": {
+          "name": "intake_complete",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "day_status_user_id_user_profiles_id_fk": {
+          "name": "day_status_user_id_user_profiles_id_fk",
+          "tableFrom": "day_status",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "day_status_user_id_log_date_pk": {
+          "name": "day_status_user_id_log_date_pk",
+          "columns": [
+            "user_id",
+            "log_date"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.exercise_catalog": {
+      "name": "exercise_catalog",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ar": {
+          "name": "name_ar",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "default_met": {
+          "name": "default_met",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "compendium_ref": {
+          "name": "compendium_ref",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "exercise_catalog_code_unique": {
+          "name": "exercise_catalog_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "code"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "exercise_met_ck": {
+          "name": "exercise_met_ck",
+          "value": "\"exercise_catalog\".\"default_met\" > 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.exercise_logs": {
+      "name": "exercise_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_date": {
+          "name": "log_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "exercise_id": {
+          "name": "exercise_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duration_minutes": {
+          "name": "duration_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "met_value": {
+          "name": "met_value",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weight_used_kg": {
+          "name": "weight_used_kg",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gross_burned_kcal": {
+          "name": "gross_burned_kcal",
+          "type": "numeric(7, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "net_burned_kcal": {
+          "name": "net_burned_kcal",
+          "type": "numeric(7, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_ex_user_date": {
+          "name": "idx_ex_user_date",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "log_date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "exercise_logs_user_id_user_profiles_id_fk": {
+          "name": "exercise_logs_user_id_user_profiles_id_fk",
+          "tableFrom": "exercise_logs",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "exercise_logs_exercise_id_exercise_catalog_id_fk": {
+          "name": "exercise_logs_exercise_id_exercise_catalog_id_fk",
+          "tableFrom": "exercise_logs",
+          "tableTo": "exercise_catalog",
+          "columnsFrom": [
+            "exercise_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "exercise_duration_ck": {
+          "name": "exercise_duration_ck",
+          "value": "\"exercise_logs\".\"duration_minutes\" BETWEEN 1 AND 600"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.food_dictionary": {
+      "name": "food_dictionary",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item_name_ar": {
+          "name": "item_name_ar",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_name_en": {
+          "name": "item_name_en",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nutrition_basis": {
+          "name": "nutrition_basis",
+          "type": "nutrition_basis_t",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grams_per_unit": {
+          "name": "grams_per_unit",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "calories": {
+          "name": "calories",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "protein_g": {
+          "name": "protein_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carbs_g": {
+          "name": "carbs_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fat_g": {
+          "name": "fat_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "food_dictionary_item_name_ar_unique": {
+          "name": "food_dictionary_item_name_ar_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "item_name_ar"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "food_calories_ck": {
+          "name": "food_calories_ck",
+          "value": "\"food_dictionary\".\"calories\" >= 0"
+        },
+        "food_protein_ck": {
+          "name": "food_protein_ck",
+          "value": "\"food_dictionary\".\"protein_g\" >= 0"
+        },
+        "food_carbs_ck": {
+          "name": "food_carbs_ck",
+          "value": "\"food_dictionary\".\"carbs_g\" >= 0"
+        },
+        "food_fat_ck": {
+          "name": "food_fat_ck",
+          "value": "\"food_dictionary\".\"fat_g\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.insights": {
+      "name": "insights",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rule_code": {
+          "name": "rule_code",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "severity": {
+          "name": "severity",
+          "type": "insight_severity_t",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "period_start": {
+          "name": "period_start",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "period_end": {
+          "name": "period_end",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "dismissed_at": {
+          "name": "dismissed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "insights_user_id_user_profiles_id_fk": {
+          "name": "insights_user_id_user_profiles_id_fk",
+          "tableFrom": "insights",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "insights_dedupe_uq": {
+          "name": "insights_dedupe_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "rule_code",
+            "period_start",
+            "period_end"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.meal_items": {
+      "name": "meal_items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "meal_id": {
+          "name": "meal_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "food_item_id": {
+          "name": "food_item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "calculated_calories": {
+          "name": "calculated_calories",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "calculated_protein": {
+          "name": "calculated_protein",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "calculated_carbs": {
+          "name": "calculated_carbs",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "calculated_fat": {
+          "name": "calculated_fat",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_meal_items_meal": {
+          "name": "idx_meal_items_meal",
+          "columns": [
+            {
+              "expression": "meal_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "meal_items_meal_id_meals_id_fk": {
+          "name": "meal_items_meal_id_meals_id_fk",
+          "tableFrom": "meal_items",
+          "tableTo": "meals",
+          "columnsFrom": [
+            "meal_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "meal_items_food_item_id_food_dictionary_id_fk": {
+          "name": "meal_items_food_item_id_food_dictionary_id_fk",
+          "tableFrom": "meal_items",
+          "tableTo": "food_dictionary",
+          "columnsFrom": [
+            "food_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "meal_items_quantity_ck": {
+          "name": "meal_items_quantity_ck",
+          "value": "\"meal_items\".\"quantity\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.meal_template_items": {
+      "name": "meal_template_items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "template_id": {
+          "name": "template_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "food_item_id": {
+          "name": "food_item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_meal_template_items_tpl": {
+          "name": "idx_meal_template_items_tpl",
+          "columns": [
+            {
+              "expression": "template_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "meal_template_items_template_id_meal_templates_id_fk": {
+          "name": "meal_template_items_template_id_meal_templates_id_fk",
+          "tableFrom": "meal_template_items",
+          "tableTo": "meal_templates",
+          "columnsFrom": [
+            "template_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "meal_template_items_food_item_id_food_dictionary_id_fk": {
+          "name": "meal_template_items_food_item_id_food_dictionary_id_fk",
+          "tableFrom": "meal_template_items",
+          "tableTo": "food_dictionary",
+          "columnsFrom": [
+            "food_item_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "meal_template_items_quantity_ck": {
+          "name": "meal_template_items_quantity_ck",
+          "value": "\"meal_template_items\".\"quantity\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.meal_templates": {
+      "name": "meal_templates",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name_ar": {
+          "name": "name_ar",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "default_meal_type": {
+          "name": "default_meal_type",
+          "type": "meal_type_t",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "meal_templates_user_id_user_profiles_id_fk": {
+          "name": "meal_templates_user_id_user_profiles_id_fk",
+          "tableFrom": "meal_templates",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "meal_templates_user_name_uq": {
+          "name": "meal_templates_user_name_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "name_ar"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.meals": {
+      "name": "meals",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_date": {
+          "name": "log_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "meal_type": {
+          "name": "meal_type",
+          "type": "meal_type_t",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scheduled_time": {
+          "name": "scheduled_time",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actual_time": {
+          "name": "actual_time",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_drift_minutes": {
+          "name": "time_drift_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "CASE WHEN scheduled_time IS NULL THEN NULL\n    ELSE ((((EXTRACT(EPOCH FROM (actual_time - scheduled_time)) / 60)::INT + 720) % 1440 + 1440) % 1440) - 720 END",
+            "type": "stored"
+          }
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_meals_user_date": {
+          "name": "idx_meals_user_date",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "log_date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "meals_user_id_user_profiles_id_fk": {
+          "name": "meals_user_id_user_profiles_id_fk",
+          "tableFrom": "meals",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.screen_time_logs": {
+      "name": "screen_time_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_date": {
+          "name": "log_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "high_focus_hours": {
+          "name": "high_focus_hours",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "moderate_admin_hours": {
+          "name": "moderate_admin_hours",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "passive_media_hours": {
+          "name": "passive_media_hours",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "total_screen_hours": {
+          "name": "total_screen_hours",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "high_focus_hours + moderate_admin_hours + passive_media_hours",
+            "type": "stored"
+          }
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "screen_time_logs_user_id_user_profiles_id_fk": {
+          "name": "screen_time_logs_user_id_user_profiles_id_fk",
+          "tableFrom": "screen_time_logs",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "screen_time_user_date_uq": {
+          "name": "screen_time_user_date_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "log_date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "screen_high_focus_ck": {
+          "name": "screen_high_focus_ck",
+          "value": "\"screen_time_logs\".\"high_focus_hours\" BETWEEN 0 AND 24"
+        },
+        "screen_moderate_ck": {
+          "name": "screen_moderate_ck",
+          "value": "\"screen_time_logs\".\"moderate_admin_hours\" BETWEEN 0 AND 24"
+        },
+        "screen_passive_ck": {
+          "name": "screen_passive_ck",
+          "value": "\"screen_time_logs\".\"passive_media_hours\" BETWEEN 0 AND 24"
+        },
+        "screen_total_ck": {
+          "name": "screen_total_ck",
+          "value": "\"screen_time_logs\".\"high_focus_hours\" + \"screen_time_logs\".\"moderate_admin_hours\" + \"screen_time_logs\".\"passive_media_hours\" <= 24"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.sleep_logs": {
+      "name": "sleep_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_date": {
+          "name": "log_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bed_time": {
+          "name": "bed_time",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sleep_onset_time": {
+          "name": "sleep_onset_time",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "wake_up_time": {
+          "name": "wake_up_time",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "night_interruptions_count": {
+          "name": "night_interruptions_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "waso_minutes": {
+          "name": "waso_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "wake_freshness_score": {
+          "name": "wake_freshness_score",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_in_bed_min": {
+          "name": "time_in_bed_min",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "(EXTRACT(EPOCH FROM (wake_up_time - bed_time)) / 60)::INT",
+            "type": "stored"
+          }
+        },
+        "sleep_latency_min": {
+          "name": "sleep_latency_min",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "(EXTRACT(EPOCH FROM (sleep_onset_time - bed_time)) / 60)::INT",
+            "type": "stored"
+          }
+        },
+        "total_sleep_min": {
+          "name": "total_sleep_min",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "(EXTRACT(EPOCH FROM (wake_up_time - sleep_onset_time)) / 60)::INT - waso_minutes",
+            "type": "stored"
+          }
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sleep_logs_user_id_user_profiles_id_fk": {
+          "name": "sleep_logs_user_id_user_profiles_id_fk",
+          "tableFrom": "sleep_logs",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sleep_user_date_uq": {
+          "name": "sleep_user_date_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "log_date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "sleep_interruptions_ck": {
+          "name": "sleep_interruptions_ck",
+          "value": "\"sleep_logs\".\"night_interruptions_count\" >= 0"
+        },
+        "sleep_waso_ck": {
+          "name": "sleep_waso_ck",
+          "value": "\"sleep_logs\".\"waso_minutes\" >= 0"
+        },
+        "sleep_freshness_ck": {
+          "name": "sleep_freshness_ck",
+          "value": "\"sleep_logs\".\"wake_freshness_score\" BETWEEN 1 AND 5"
+        },
+        "sleep_order_ck": {
+          "name": "sleep_order_ck",
+          "value": "\"sleep_logs\".\"bed_time\" <= \"sleep_logs\".\"sleep_onset_time\" AND \"sleep_logs\".\"sleep_onset_time\" < \"sleep_logs\".\"wake_up_time\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.user_profiles": {
+      "name": "user_profiles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gender": {
+          "name": "gender",
+          "type": "gender_t",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "current_height_cm": {
+          "name": "current_height_cm",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "initial_weight_kg": {
+          "name": "initial_weight_kg",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_weight_kg": {
+          "name": "target_weight_kg",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "default_activity_factor": {
+          "name": "default_activity_factor",
+          "type": "numeric(4, 3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'1.200'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "user_profiles_height_ck": {
+          "name": "user_profiles_height_ck",
+          "value": "\"user_profiles\".\"current_height_cm\" BETWEEN 100 AND 250"
+        },
+        "user_profiles_initial_weight_ck": {
+          "name": "user_profiles_initial_weight_ck",
+          "value": "\"user_profiles\".\"initial_weight_kg\" BETWEEN 30 AND 300"
+        },
+        "user_profiles_target_weight_ck": {
+          "name": "user_profiles_target_weight_ck",
+          "value": "\"user_profiles\".\"target_weight_kg\" BETWEEN 30 AND 300"
+        },
+        "user_profiles_activity_factor_ck": {
+          "name": "user_profiles_activity_factor_ck",
+          "value": "\"user_profiles\".\"default_activity_factor\" BETWEEN 1.0 AND 2.5"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.user_settings": {
+      "name": "user_settings",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Europe/Istanbul'"
+        },
+        "planned_daily_deficit_kcal": {
+          "name": "planned_daily_deficit_kcal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 500
+        },
+        "protein_g_per_kg": {
+          "name": "protein_g_per_kg",
+          "type": "numeric(3, 2)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'1.80'"
+        },
+        "use_net_met": {
+          "name": "use_net_met",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "use_katch_mcardle": {
+          "name": "use_katch_mcardle",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "caffeine_mg_per_g_coffee": {
+          "name": "caffeine_mg_per_g_coffee",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'11.0'"
+        },
+        "caffeine_half_life_hours": {
+          "name": "caffeine_half_life_hours",
+          "type": "numeric(3, 1)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'5.0'"
+        },
+        "required_fasting_hours": {
+          "name": "required_fasting_hours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 14
+        },
+        "kcal_per_kg_fat": {
+          "name": "kcal_per_kg_fat",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 7700
+        },
+        "ema_alpha_daily": {
+          "name": "ema_alpha_daily",
+          "type": "numeric(3, 2)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0.10'"
+        },
+        "breakfast_time": {
+          "name": "breakfast_time",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lunch_time": {
+          "name": "lunch_time",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dinner_time": {
+          "name": "dinner_time",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_settings_user_id_user_profiles_id_fk": {
+          "name": "user_settings_user_id_user_profiles_id_fk",
+          "tableFrom": "user_settings",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "user_settings_deficit_ck": {
+          "name": "user_settings_deficit_ck",
+          "value": "\"user_settings\".\"planned_daily_deficit_kcal\" BETWEEN 0 AND 1200"
+        },
+        "user_settings_protein_ck": {
+          "name": "user_settings_protein_ck",
+          "value": "\"user_settings\".\"protein_g_per_kg\" BETWEEN 0.8 AND 3.0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.weigh_ins": {
+      "name": "weigh_ins",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_date": {
+          "name": "log_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "measured_at": {
+          "name": "measured_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dry_fasted_weight_kg": {
+          "name": "dry_fasted_weight_kg",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_meal_at": {
+          "name": "last_meal_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fasting_hours": {
+          "name": "fasting_hours",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": false,
+          "generated": {
+            "as": "EXTRACT(EPOCH FROM (measured_at - last_meal_at)) / 3600",
+            "type": "stored"
+          }
+        },
+        "bathroom_done": {
+          "name": "bathroom_done",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "no_fluids_before": {
+          "name": "no_fluids_before",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "high_sodium_yesterday": {
+          "name": "high_sodium_yesterday",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "normal_digestion": {
+          "name": "normal_digestion",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "is_official_weekly": {
+          "name": "is_official_weekly",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "is_protocol_compliant": {
+          "name": "is_protocol_compliant",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "weigh_ins_user_id_user_profiles_id_fk": {
+          "name": "weigh_ins_user_id_user_profiles_id_fk",
+          "tableFrom": "weigh_ins",
+          "tableTo": "user_profiles",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "weigh_ins_user_date_uq": {
+          "name": "weigh_ins_user_date_uq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "user_id",
+            "log_date"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "weigh_ins_weight_ck": {
+          "name": "weigh_ins_weight_ck",
+          "value": "\"weigh_ins\".\"dry_fasted_weight_kg\" BETWEEN 30 AND 300"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.gender_t": {
+      "name": "gender_t",
+      "schema": "public",
+      "values": [
+        "male",
+        "female"
+      ]
+    },
+    "public.insight_severity_t": {
+      "name": "insight_severity_t",
+      "schema": "public",
+      "values": [
+        "info",
+        "warning",
+        "critical"
+      ]
+    },
+    "public.meal_type_t": {
+      "name": "meal_type_t",
+      "schema": "public",
+      "values": [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "snack"
+      ]
+    },
+    "public.milk_type_t": {
+      "name": "milk_type_t",
+      "schema": "public",
+      "values": [
+        "none",
+        "whole",
+        "semi_skimmed",
+        "skimmed"
+      ]
+    },
+    "public.nutrition_basis_t": {
+      "name": "nutrition_basis_t",
+      "schema": "public",
+      "values": [
+        "per_100g",
+        "per_100ml",
+        "per_unit"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

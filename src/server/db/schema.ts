@@ -122,6 +122,25 @@ export const mealItems = pgTable('meal_items', {
   check('meal_items_quantity_ck', sql`${t.quantity} > 0`),
 ]);
 
+// Saved meal templates store references + quantities only; snapshots are computed fresh when logging a meal.
+export const mealTemplates = pgTable('meal_templates', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => userProfiles.id, { onDelete: 'cascade' }),
+  nameAr: varchar('name_ar', { length: 120 }).notNull(),
+  defaultMealType: mealTypeEnum('default_meal_type'),
+  createdAt: tstz('created_at').notNull().defaultNow(),
+}, (t) => [unique('meal_templates_user_name_uq').on(t.userId, t.nameAr)]);
+
+export const mealTemplateItems = pgTable('meal_template_items', {
+  id: serial('id').primaryKey(),
+  templateId: integer('template_id').notNull().references(() => mealTemplates.id, { onDelete: 'cascade' }),
+  foodItemId: integer('food_item_id').notNull().references(() => foodDictionary.id),
+  quantity: numeric('quantity', { precision: 7, scale: 2 }).notNull(),
+}, (t) => [
+  index('idx_meal_template_items_tpl').on(t.templateId),
+  check('meal_template_items_quantity_ck', sql`${t.quantity} > 0`),
+]);
+
 // ───────────── Beverages ─────────────
 // User-defined drinks (the list starts empty). Values per 100 ml of the drink itself, before milk and sugar.
 export const beverageCatalog = pgTable('beverage_catalog', {
