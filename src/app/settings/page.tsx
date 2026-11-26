@@ -4,6 +4,7 @@ import { Card } from '@/components/Card';
 import { PageHeader } from '@/components/ui';
 import { DEFAULT_TIMEZONE, getProfileAndSettings } from '@/server/queries/profile';
 import { USER_ID } from '@/server/session';
+import { DataExportCard } from './DataExportCard';
 import { SettingsForm } from './SettingsForm';
 
 export const metadata: Metadata = { title: 'الإعدادات', description: 'الملف الشخصي والأهداف والثوابت العلمية.' };
@@ -30,6 +31,7 @@ export default async function SettingsPage() {
           }}
         />
       </Card>
+      <DataExportCard />
     </div>
   );
 }
