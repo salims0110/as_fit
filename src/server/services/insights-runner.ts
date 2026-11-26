@@ -47,7 +47,15 @@ export async function buildPeriodContext(userId: number, endDate?: string): Prom
     highFocusH: screens.find((s) => s.date === d.date)?.highFocusH ?? 0,
     sleep: (() => {
       const s = sleeps.find((x) => x.date === d.date);
-      return s ? { tstMin: s.tstMin, efficiencyPct: s.tibMin > 0 ? (s.tstMin / s.tibMin) * 100 : 0, bedAt: s.bedAt } : undefined;
+      return s
+        ? {
+          tstMin: s.tstMin,
+          efficiencyPct: s.tibMin > 0 ? (s.tstMin / s.tibMin) * 100 : 0,
+          bedAt: s.bedAt,
+          onsetAt: s.onsetAt,
+          wakeAt: s.wakeAt,
+        }
+        : undefined;
     })(),
     caffeineDoses: bevs.filter((b) => b.date === d.date && b.caffeineMg > 0).map((b) => ({ mg: b.caffeineMg, at: b.consumedAt })),
   }));

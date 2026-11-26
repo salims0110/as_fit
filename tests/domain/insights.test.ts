@@ -7,6 +7,7 @@ import { falsePlateau } from '@/domain/insights/rules/false-plateau';
 import { lateEating } from '@/domain/insights/rules/late-eating';
 import { lunchDrift } from '@/domain/insights/rules/lunch-drift';
 import { proteinShortfall } from '@/domain/insights/rules/protein-shortfall';
+import { sleepMidpointDrift } from '@/domain/insights/rules/sleep-midpoint-drift';
 import { truePlateau } from '@/domain/insights/rules/true-plateau';
 import type { DayContext, PeriodContext, WeighInContext } from '@/domain/insights/types';
 
@@ -33,7 +34,7 @@ function ctx(over: Partial<PeriodContext> = {}): PeriodContext {
 const lunch = (i: number, drift: number | null, kcal = 700) => ({ type: 'lunch' as const, driftMin: drift, kcal, protein: 30, actualAt: new Date(`${date(i)}T13:00:00Z`) });
 
 describe('engine', () => {
-  it('registers 8 unique rules', () => expect(new Set(RULES.map((r) => r.code)).size).toBe(8));
+  it('registers 9 unique rules', () => expect(new Set(RULES.map((r) => r.code)).size).toBe(9));
   it('quiet context → no insights', () => expect(runRules(ctx({ days: [day(0)] }))).toEqual([]));
 });
 
@@ -153,4 +154,76 @@ describe('AGGRESSIVE_DEFICIT', () => {
     expect(aggressiveDeficit.evaluate(ctx({ weighIns: [weigh(0, 80), weigh(7, 79.6), weigh(13, 79.2)], trackingDay: 30 }))).toEqual([]));
   it('too few readings → no fire', () =>
     expect(aggressiveDeficit.evaluate(ctx({ weighIns: [weigh(0, 80), weigh(13, 77)], trackingDay: 30 }))).toEqual([]));
+});
+
+describe('SLEEP_MIDPOINT_DRIFT', () => {
+  // 2026-01-01 is Thursday (i=0: Thu, i=1: Fri, i=2: Sat, i=3: Sun, i=4: Mon, i=5: Tue)
+  const nightEndingOn = (i: number, onsetIso: string, wakeIso: string) =>
+    day(i, {
+      sleep: {
+        tstMin: 480,
+        efficiencyPct: 90,
+        bedAt: new Date(onsetIso),
+        onsetAt: new Date(onsetIso),
+        wakeAt: new Date(wakeIso),
+      },
+    });
+
+  it('fires when circular midpoint drifts >= 90 min across midnight (e.g., 23:30 work vs 01:30 weekend)', () => {
+    // Workdays (Thu 01-01, Fri 01-02, Mon 01-05): sleep 19:30 -> 03:30 => midpoint 23:30
+    // Weekends (Sat 01-03, Sun 01-04): sleep 21:30 -> 05:30 => midpoint 01:30 (drift = 120 min)
+    const days = [
+      nightEndingOn(0, '2025-12-31T19:30:00Z', '2026-01-01T03:30:00Z'),
+      nightEndingOn(1, '2026-01-01T19:30:00Z', '2026-01-02T03:30:00Z'),
+      nightEndingOn(2, '2026-01-02T21:30:00Z', '2026-01-03T05:30:00Z'),
+      nightEndingOn(3, '2026-01-03T21:30:00Z', '2026-01-04T05:30:00Z'),
+      nightEndingOn(4, '2026-01-04T19:30:00Z', '2026-01-05T03:30:00Z'),
+    ];
+    const r = sleepMidpointDrift.evaluate(ctx({ days }));
+    expect(r).toHaveLength(1);
+    expect(r[0]!.severity).toBe('warning');
+    expect(r[0]!.payload).toEqual({
+      workdayMidpointClock: '23:30',
+      freedayMidpointClock: '01:30',
+      driftMinutes: 120,
+      workdayNights: 3,
+      freedayNights: 2,
+    });
+  });
+
+  it('fires with info severity when drift is between 90 and 119 minutes', () => {
+    // Workdays: 23:00 -> 07:00 => midpoint 03:00; Weekends: 00:35 -> 08:35 => midpoint 04:35 (drift = 95 min)
+    const days = [
+      nightEndingOn(0, '2025-12-31T23:00:00Z', '2026-01-01T07:00:00Z'),
+      nightEndingOn(1, '2026-01-01T23:00:00Z', '2026-01-02T07:00:00Z'),
+      nightEndingOn(2, '2026-01-03T00:35:00Z', '2026-01-03T08:35:00Z'),
+      nightEndingOn(3, '2026-01-04T00:35:00Z', '2026-01-04T08:35:00Z'),
+      nightEndingOn(4, '2026-01-04T23:00:00Z', '2026-01-05T07:00:00Z'),
+    ];
+    const r = sleepMidpointDrift.evaluate(ctx({ days }));
+    expect(r).toHaveLength(1);
+    expect(r[0]!.severity).toBe('info');
+    expect(r[0]!.payload.driftMinutes).toBe(95);
+  });
+
+  it('does not fire when drift is below 90 minutes', () => {
+    const days = [
+      nightEndingOn(0, '2025-12-31T23:00:00Z', '2026-01-01T07:00:00Z'),
+      nightEndingOn(1, '2026-01-01T23:00:00Z', '2026-01-02T07:00:00Z'),
+      nightEndingOn(2, '2026-01-03T00:00:00Z', '2026-01-03T08:00:00Z'),
+      nightEndingOn(3, '2026-01-04T00:00:00Z', '2026-01-04T08:00:00Z'),
+      nightEndingOn(4, '2026-01-04T23:00:00Z', '2026-01-05T07:00:00Z'),
+    ];
+    expect(sleepMidpointDrift.evaluate(ctx({ days }))).toEqual([]);
+  });
+
+  it('does not fire when fewer than 3 workday or 2 weekend nights are logged', () => {
+    const days = [
+      nightEndingOn(0, '2025-12-31T22:00:00Z', '2026-01-01T06:00:00Z'),
+      nightEndingOn(1, '2026-01-01T22:00:00Z', '2026-01-02T06:00:00Z'),
+      nightEndingOn(2, '2026-01-03T02:00:00Z', '2026-01-03T10:00:00Z'),
+    ];
+    expect(sleepMidpointDrift.evaluate(ctx({ days }))).toEqual([]);
+    expect(sleepMidpointDrift.evaluate(ctx({ days: [] }))).toEqual([]);
+  });
 });

@@ -12,7 +12,7 @@ export interface DayContext {
   deficit: number;           // TDEE_used − intake
   formulaDeficit: number;    // TDEE_formula − intake — plateau rules use this (avoids circularity, A3)
   highFocusH: number;
-  sleep?: { tstMin: number; efficiencyPct: number; bedAt: Date }; // night ending on this date
+  sleep?: { tstMin: number; efficiencyPct: number; bedAt: Date; onsetAt?: Date; wakeAt?: Date }; // night ending on this date
   caffeineDoses: { mg: number; at: Date }[];
 }
 
