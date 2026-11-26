@@ -99,8 +99,9 @@ pnpm test:coverage
 If your change modifies database queries, Server Actions, build config, or interactive user flows, also verify:
 
 ```bash
-pnpm build
+pnpm test:db:up
 pnpm test:e2e
+pnpm test:db:down
 ```
 
 Never commit `.env` files, personal health exports, or `backups/`. Thank you for helping build AS_FIT!

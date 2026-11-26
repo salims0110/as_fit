@@ -1,0 +1,22 @@
+# Ephemeral PostgreSQL 16 instance dedicated to Playwright E2E suites.
+# Listens on 127.0.0.1:5433 (matching playwright.config.ts) with in-memory tmpfs storage
+# so personal data in the primary asfit-db container (port 5432) is never touched.
+services:
+  test-db:
+    image: postgres:16-alpine
+    container_name: asfit-test-db
+    restart: "no"
+    environment:
+      POSTGRES_USER: ${E2E_POSTGRES_USER:-asfit}
+      POSTGRES_PASSWORD: ${E2E_POSTGRES_PASSWORD:-asfit_local}
+      POSTGRES_DB: ${E2E_POSTGRES_DB:-asfit_test}
+      TZ: ${APP_TIMEZONE:-Europe/Istanbul}
+    ports:
+      - "127.0.0.1:${E2E_POSTGRES_PORT:-5433}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${E2E_POSTGRES_USER:-asfit} -d ${E2E_POSTGRES_DB:-asfit_test}"]
+      interval: 2s
+      timeout: 2s
+      retries: 15

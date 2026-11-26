@@ -70,6 +70,12 @@ pnpm check
 pnpm test:coverage
 ```
 
-ينفّذ `pnpm check` بالتتابع: `lint` + `typecheck` + `check:conventions` (فاحص الألوان وRTL وحدود الطبقات) + `vitest`. وإذا شمل تعديلك مسارات تفاعلية أو إعدادات بناء، تحقّق أيضاً من `pnpm build` و`pnpm test:e2e`.
+ينفّذ `pnpm check` بالتتابع: `lint` + `typecheck` + `check:conventions` (فاحص الألوان وRTL وحدود الطبقات) + `vitest`. وإذا شمل تعديلك مسارات تفاعلية أو إعدادات بناء، شغّل حاوية الاختبار المعزولة وتحقّق من `Playwright E2E`:
+
+```bash
+pnpm test:db:up
+pnpm test:e2e
+pnpm test:db:down
+```
 
 </div>
