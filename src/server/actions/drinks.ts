@@ -1,6 +1,7 @@
 'use server';
 
 import { and, eq } from 'drizzle-orm';
+import { drinksCatalogBundleSchema, parseCatalogBundle } from '@/lib/validation/catalog-import';
 import { INVALID_ID_MESSAGE, parseRecordId } from '@/lib/validation/common';
 import { drinkSchema } from '@/lib/validation/schemas';
 import type { ActionResult } from '@/lib/validation/common';
@@ -46,4 +47,46 @@ export async function deleteDrink(id: number): Promise<ActionResult> {
   await db.delete(beverageCatalog).where(and(eq(beverageCatalog.id, recordId), eq(beverageCatalog.userId, USER_ID)));
   refreshAll();
   return { ok: true };
+}
+
+// Imports new drinks from a validated JSON bundle without mutating existing drinks or past beverage log snapshots.
+export async function importDrinksJson(rawJson: unknown): Promise<ActionResult<{ added: number; skipped: number }>> {
+  if (MOCK_MODE) return failure(MOCK_READ_ONLY_MESSAGE);
+  const parsed = parseCatalogBundle(rawJson, drinksCatalogBundleSchema);
+  if (!parsed.ok) return failure(parsed.message);
+
+  const existingRows = await db
+    .select({ name: beverageCatalog.nameAr })
+    .from(beverageCatalog)
+    .where(eq(beverageCatalog.userId, USER_ID));
+  const seen = new Set(existingRows.map((r) => r.name.trim()));
+
+  const toInsert: (typeof beverageCatalog.$inferInsert)[] = [];
+  let skipped = 0;
+
+  for (const item of parsed.data.items) {
+    const key = item.nameAr.trim();
+    if (seen.has(key)) {
+      skipped++;
+      continue;
+    }
+    seen.add(key);
+    toInsert.push({
+      userId: USER_ID,
+      nameAr: key,
+      byCoffeeWeight: item.byCoffeeWeight,
+      caffeineMgPer100ml: item.caffeineMgPer100ml.toFixed(1),
+      kcalPer100ml: item.kcalPer100ml.toFixed(1),
+      proteinGPer100ml: item.proteinGPer100ml.toFixed(1),
+      defaultVolumeMl: item.defaultVolumeMl.toFixed(1),
+      defaultCoffeeG: item.byCoffeeWeight ? toNumStr(item.defaultCoffeeG, 1) : null,
+    });
+  }
+
+  if (toInsert.length > 0) {
+    await db.insert(beverageCatalog).values(toInsert).onConflictDoNothing();
+    refreshAll();
+  }
+
+  return { ok: true, added: toInsert.length, skipped };
 }

@@ -1,6 +1,7 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
+import { foodsCatalogBundleSchema, parseCatalogBundle } from '@/lib/validation/catalog-import';
 import { INVALID_ID_MESSAGE, parseRecordId } from '@/lib/validation/common';
 import { foodSchema } from '@/lib/validation/schemas';
 import type { ActionResult } from '@/lib/validation/common';
@@ -47,4 +48,43 @@ export async function setFoodActive(id: number, active: boolean): Promise<Action
   if (!row) return failure('الصنف غير موجود');
   refreshAll();
   return { ok: true };
+}
+
+// Imports new items from a validated JSON bundle without mutating existing items or past meal snapshots.
+export async function importFoodsJson(rawJson: unknown): Promise<ActionResult<{ added: number; skipped: number }>> {
+  if (MOCK_MODE) return failure(MOCK_READ_ONLY_MESSAGE);
+  const parsed = parseCatalogBundle(rawJson, foodsCatalogBundleSchema);
+  if (!parsed.ok) return failure(parsed.message);
+
+  const existingRows = await db.select({ name: foodDictionary.itemNameAr }).from(foodDictionary);
+  const seen = new Set(existingRows.map((r) => r.name.trim()));
+
+  const toInsert: (typeof foodDictionary.$inferInsert)[] = [];
+  let skipped = 0;
+
+  for (const item of parsed.data.items) {
+    const key = item.itemNameAr.trim();
+    if (seen.has(key)) {
+      skipped++;
+      continue;
+    }
+    seen.add(key);
+    toInsert.push({
+      itemNameAr: key,
+      itemNameEn: item.itemNameEn || null,
+      nutritionBasis: item.nutritionBasis,
+      gramsPerUnit: toNumStr(item.gramsPerUnit, 1),
+      calories: item.calories.toFixed(2),
+      proteinG: item.proteinG.toFixed(2),
+      carbsG: toNumStr(item.carbsG),
+      fatG: toNumStr(item.fatG),
+    });
+  }
+
+  if (toInsert.length > 0) {
+    await db.insert(foodDictionary).values(toInsert).onConflictDoNothing();
+    refreshAll();
+  }
+
+  return { ok: true, added: toInsert.length, skipped };
 }

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
 import { Card } from '@/components/Card';
+import { CatalogPortability } from '@/components/forms/CatalogPortability';
 import { Num } from '@/components/Num';
 import { PageHeader, SectionTitle } from '@/components/ui';
 import { CAFFEINE_REFERENCE } from '@/domain/beverages';
+import { importDrinksJson } from '@/server/actions/drinks';
 import { getDrinks } from '@/server/queries/logs';
 import { getProfileAndSettings } from '@/server/queries/profile';
 import { USER_ID } from '@/server/session';
@@ -18,7 +20,11 @@ export default async function DrinksPage() {
   const mgPerG = ps?.settings.caffeineMgPerG ?? 11;
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="قائمة المشروبات" description="أضف المشروبات التي تشربها فعلاً بقيمها. تعديل مشروب أو حذفه لا يغيّر ما سُجّل سابقاً." />
+      <PageHeader
+        title="قائمة المشروبات"
+        description="أضف المشروبات التي تشربها فعلاً بقيمها. تعديل مشروب أو حذفه لا يغيّر ما سُجّل سابقاً."
+        actions={<CatalogPortability kind="drinks" itemCount={drinks.length} onImport={importDrinksJson} />}
+      />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div className="flex flex-col gap-6">
           <Card>
